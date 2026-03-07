@@ -1,0 +1,88 @@
+{
+  "name": "md2pdf",
+  "displayName": "MD2PDF",
+  "description": "Automatically converts Markdown files to formatted PDFs on save",
+  "version": "0.1.0",
+  "publisher": "jethomas84",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jethomas84/MD2PDF"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "MD2PDF",
+      "properties": {
+        "md2pdf.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic PDF generation on Markdown file save"
+        },
+        "md2pdf.chromePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Chrome/Chromium executable. Leave empty for auto-detection."
+        },
+        "md2pdf.outputDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Output directory for PDFs. Leave empty to place PDFs next to the Markdown file."
+        },
+        "md2pdf.pageFormat": {
+          "type": "string",
+          "default": "Letter",
+          "enum": [
+            "A3",
+            "A4",
+            "A5",
+            "Letter",
+            "Legal",
+            "Tabloid"
+          ],
+          "description": "PDF page format"
+        },
+        "md2pdf.pageOrientation": {
+          "type": "string",
+          "default": "portrait",
+          "enum": [
+            "portrait",
+            "landscape"
+          ],
+          "description": "PDF page orientation"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "md2pdf.convertCurrentFile",
+        "title": "MD2PDF: Convert Current Markdown File to PDF"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "highlight.js": "^11.9.0",
+    "markdown-it": "^14.0.0",
+    "puppeteer-core": "^22.0.0"
+  }
+}
