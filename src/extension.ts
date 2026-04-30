@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { convertMarkdownToPdf } from './converter';
+import { resolveBrowserExecutable } from './chromeFinder';
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -37,7 +38,29 @@ export function activate(context: vscode.ExtensionContext) {
     await runConversion(editor.document.uri.fsPath);
   });
 
-  context.subscriptions.push(saveListener, command);
+  const checkBrowserSetupCommand = vscode.commands.registerCommand('md2pdf.checkBrowserSetup', async () => {
+    const config = vscode.workspace.getConfiguration('md2pdf');
+    const configuredPath = config.get<string>('chromePath');
+    const resolution = resolveBrowserExecutable(configuredPath);
+
+    if (resolution.executablePath) {
+      vscode.window.showInformationMessage(
+        `MD2PDF: Found ${resolution.browserName || 'a supported browser'} at ${resolution.executablePath}`
+      );
+      return;
+    }
+
+    const configuredPathMessage = resolution.configuredPath
+      ? ` The current md2pdf.chromePath setting was not found: ${resolution.configuredPath}.`
+      : '';
+
+    vscode.window.showWarningMessage(
+      'MD2PDF: No supported browser was found. Install Chrome, Edge, or Brave, or set "md2pdf.chromePath" in Settings.'
+      + configuredPathMessage
+    );
+  });
+
+  context.subscriptions.push(saveListener, command, checkBrowserSetupCommand);
 }
 
 async function runConversion(filePath: string) {
