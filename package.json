@@ -96,7 +96,9 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package"
+    "package": "vsce package",
+    "release:check": "npm run compile && npm run package",
+    "publish:marketplace": "vsce publish"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.6.0",

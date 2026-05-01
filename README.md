@@ -111,3 +111,38 @@ MD2PDF contributes these settings:
 
 - The generated PDF includes a small footer with the project repository URL.
 - HTML inside Markdown is supported because rendering is handled by Markdown-it before the page is printed to PDF.
+
+## Release
+
+Use the repo-local `@vscode/vsce` install through the npm scripts from the extension root.
+
+### Package a release candidate
+
+1. Update the extension version in `package.json`.
+2. Run `npm run release:check`.
+3. Confirm the generated `.vsix` file in the project root and test-install it in VS Code with `Extensions: Install from VSIX...` if needed.
+4. If you plan to publish with `npm run publish:marketplace`, do it from the same clean tree immediately after the check so you do not publish different bits than the ones you validated.
+
+### Publish to the VS Code Marketplace
+
+`vsce` publishes with a Visual Studio Marketplace publisher and a Personal Access Token (PAT). Keep the token outside the repo and either:
+
+- create a PAT in Azure DevOps with the `Marketplace (Manage)` scope and `All accessible organizations`, then sign in once with `npx vsce login jethomas84`, or
+- set `VSCE_PAT` for the current shell session before publishing.
+
+Before the first publish:
+
+1. Create or confirm the Azure DevOps organization tied to your Microsoft account.
+2. Create or confirm the `jethomas84` publisher in the Visual Studio Marketplace management portal.
+3. Use the same Microsoft account and PAT when you run `vsce login`.
+4. Manage publisher members and extension access through the Marketplace publisher management portal.
+
+When the release artifact looks correct, publish with:
+
+```bash
+npm run publish:marketplace
+```
+
+`npm run publish:marketplace` repackages the current working tree before publishing. Do not make additional file changes between `npm run release:check` and the publish step unless you are intentionally rebuilding and re-verifying the release.
+
+`npm run package` remains the safe packaging step when you only want a local `.vsix` and do not want to publish.
