@@ -1,9 +1,15 @@
 {
   "name": "md2pdf",
   "displayName": "MD2PDF",
-  "description": "Automatically converts Markdown files to formatted PDFs on save",
+  "description": "Convert Markdown files to clean, printable PDFs in VS Code using a locally installed Chrome, Edge, or Brave browser.",
   "version": "0.1.0",
   "publisher": "jethomas84",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "homepage": "https://github.com/jethomas84/MD2PDF#readme",
+  "bugs": {
+    "url": "https://github.com/jethomas84/MD2PDF/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/jethomas84/MD2PDF"
@@ -12,7 +18,19 @@
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Formatters",
+    "Programming Languages",
     "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "pdf",
+    "markdown-to-pdf",
+    "export",
+    "documentation",
+    "chrome",
+    "edge",
+    "brave"
   ],
   "activationEvents": [
     "onLanguage:markdown",
@@ -81,6 +99,7 @@
     "package": "vsce package"
   },
   "devDependencies": {
+    "@vscode/vsce": "^3.6.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
