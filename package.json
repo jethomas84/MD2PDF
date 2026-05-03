@@ -1,8 +1,8 @@
 {
-  "name": "md2pdf",
-  "displayName": "MD2PDF",
+  "name": "md2pdf-local",
+  "displayName": "MD2PDF Local",
   "description": "Convert Markdown files to clean, printable PDFs in VS Code using a locally installed Chrome, Edge, or Brave browser.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "jethomas84",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -40,7 +40,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "MD2PDF",
+      "title": "MD2PDF Local",
       "properties": {
         "md2pdf.enabled": {
           "type": "boolean",
