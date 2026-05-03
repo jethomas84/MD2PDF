@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer-core';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import { BrowserResolution, resolveBrowserExecutable } from './chromeFinder';
+import { getLaunchCandidates, launchBrowserWithFallback } from './browserLauncher';
 
 const md = new MarkdownIt({
   html: true,
@@ -166,10 +167,10 @@ export async function convertMarkdownToPdf(
   outputPath?: string
 ): Promise<string> {
   const browserResolution = resolveBrowser();
-  if (!browserResolution.executablePath) {
+  const launchCandidates = getLaunchCandidates(browserResolution);
+  if (launchCandidates.length === 0) {
     throw new Error(buildMissingBrowserMessage(browserResolution));
   }
-  const browserPath = browserResolution.executablePath;
 
   const mdContent = fs.readFileSync(mdFilePath, 'utf-8');
   const title = path.basename(mdFilePath, path.extname(mdFilePath));
@@ -194,10 +195,14 @@ export async function convertMarkdownToPdf(
 
   const html = buildHtml(mdContent, title);
 
-  const browser = await puppeteer.launch({
-    executablePath: browserPath,
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+  const browser = await launchBrowserWithFallback(launchCandidates, async (candidate) => {
+    return puppeteer.launch({
+      executablePath: candidate.executablePath,
+      headless: true,
+      args: process.platform === 'linux'
+        ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
+        : [],
+    });
   });
 
   try {

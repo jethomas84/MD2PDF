@@ -237,50 +237,46 @@ function getPlatformTargets(): BrowserTarget[] {
   return LINUX_COMMANDS;
 }
 
+export function buildBrowserResolution(
+  configuredPath: string | null,
+  diagnostics: BrowserCandidate[]
+): BrowserResolution {
+  const firstDetected = diagnostics.find((candidate) => candidate.detected && candidate.executablePath);
+
+  if (!firstDetected || !firstDetected.executablePath) {
+    return {
+      executablePath: null,
+      browser: null,
+      browserName: null,
+      source: null,
+      configuredPath,
+      diagnostics,
+    };
+  }
+
+  return {
+    executablePath: firstDetected.executablePath,
+    browser: firstDetected.browser,
+    browserName: firstDetected.browserName,
+    source: firstDetected.source,
+    configuredPath,
+    diagnostics,
+  };
+}
+
 export function resolveBrowserExecutable(configuredPath?: string | null): BrowserResolution {
   const trimmedConfiguredPath = configuredPath?.trim() || null;
   const diagnostics: BrowserCandidate[] = [];
 
   if (trimmedConfiguredPath) {
-    const configuredCandidate = detectConfiguredPath(trimmedConfiguredPath);
-    diagnostics.push(configuredCandidate);
-
-    if (configuredCandidate.detected && configuredCandidate.executablePath) {
-      return {
-        executablePath: configuredCandidate.executablePath,
-        browser: configuredCandidate.browser,
-        browserName: configuredCandidate.browserName,
-        source: configuredCandidate.source,
-        configuredPath: trimmedConfiguredPath,
-        diagnostics,
-      };
-    }
+    diagnostics.push(detectConfiguredPath(trimmedConfiguredPath));
   }
 
   for (const target of getPlatformTargets()) {
-    const candidate = target.path ? detectFromPath(target) : detectFromCommand(target);
-    diagnostics.push(candidate);
-
-    if (candidate.detected && candidate.executablePath) {
-      return {
-        executablePath: candidate.executablePath,
-        browser: candidate.browser,
-        browserName: candidate.browserName,
-        source: candidate.source,
-        configuredPath: trimmedConfiguredPath,
-        diagnostics,
-      };
-    }
+    diagnostics.push(target.path ? detectFromPath(target) : detectFromCommand(target));
   }
 
-  return {
-    executablePath: null,
-    browser: null,
-    browserName: null,
-    source: null,
-    configuredPath: trimmedConfiguredPath,
-    diagnostics,
-  };
+  return buildBrowserResolution(trimmedConfiguredPath, diagnostics);
 }
 
 export function findChrome(): string | null {

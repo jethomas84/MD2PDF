@@ -1,7 +1,9 @@
 .gitignore
+.worktrees/**
 .vscode/**
 .vscode-test/**
 src/**
+test/**
 docs/**
 .github/**
 tsconfig.json

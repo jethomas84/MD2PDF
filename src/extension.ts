@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import puppeteer from 'puppeteer-core';
 import { convertMarkdownToPdf } from './converter';
 import { resolveBrowserExecutable } from './chromeFinder';
+import { getLaunchCandidates, launchBrowserWithFallback } from './browserLauncher';
 
 let statusBarItem: vscode.StatusBarItem;
 
@@ -42,22 +44,43 @@ export function activate(context: vscode.ExtensionContext) {
     const config = vscode.workspace.getConfiguration('md2pdf');
     const configuredPath = config.get<string>('chromePath');
     const resolution = resolveBrowserExecutable(configuredPath);
+    const launchCandidates = getLaunchCandidates(resolution);
 
-    if (resolution.executablePath) {
-      vscode.window.showInformationMessage(
-        `MD2PDF: Found ${resolution.browserName || 'a supported browser'} at ${resolution.executablePath}`
+    if (launchCandidates.length === 0) {
+      const configuredPathMessage = resolution.configuredPath
+        ? ` The current md2pdf.chromePath setting was not found: ${resolution.configuredPath}.`
+        : '';
+
+      vscode.window.showWarningMessage(
+        'MD2PDF: No supported browser was found. Install Chrome, Edge, or Brave, or set "md2pdf.chromePath" in Settings.'
+        + configuredPathMessage
       );
       return;
     }
 
-    const configuredPathMessage = resolution.configuredPath
-      ? ` The current md2pdf.chromePath setting was not found: ${resolution.configuredPath}.`
-      : '';
+    try {
+      let launchedCandidatePath = '';
+      let launchedCandidateName = 'a supported browser';
+      const browser = await launchBrowserWithFallback(launchCandidates, async (candidate) => {
+        launchedCandidatePath = candidate.executablePath;
+        launchedCandidateName = candidate.browserName;
+        return puppeteer.launch({
+          executablePath: candidate.executablePath,
+          headless: true,
+          args: process.platform === 'linux'
+            ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu']
+            : [],
+        });
+      });
+      await browser.close();
 
-    vscode.window.showWarningMessage(
-      'MD2PDF: No supported browser was found. Install Chrome, Edge, or Brave, or set "md2pdf.chromePath" in Settings.'
-      + configuredPathMessage
-    );
+      vscode.window.showInformationMessage(
+        `MD2PDF: Ready to use ${launchedCandidateName} at ${launchedCandidatePath}`
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      vscode.window.showWarningMessage(`MD2PDF: Browser detection succeeded, but launch failed. ${message}`);
+    }
   });
 
   context.subscriptions.push(saveListener, command, checkBrowserSetupCommand);
