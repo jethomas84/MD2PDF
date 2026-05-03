@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import puppeteer from 'puppeteer-core';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
-import { findChrome } from './chromeFinder';
+import { BrowserResolution, resolveBrowserExecutable } from './chromeFinder';
 
 const md = new MarkdownIt({
   html: true,
@@ -131,25 +131,45 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function resolveChromePath(): string | null {
+function resolveBrowser(): BrowserResolution {
   const config = vscode.workspace.getConfiguration('md2pdf');
   const configuredPath = config.get<string>('chromePath');
-  if (configuredPath && configuredPath.trim() !== '') {
-    return configuredPath;
-  }
-  return findChrome();
+  return resolveBrowserExecutable(configuredPath);
+}
+
+function buildMissingBrowserMessage(resolution: BrowserResolution): string {
+  const checkedLocations = resolution.diagnostics
+    .map(candidate => {
+      const lookup = candidate.source === 'command' ? `command "${candidate.location}"` : candidate.location;
+      return `${candidate.browserName} via ${lookup}`;
+    })
+    .join(', ');
+
+  const configuredPathMessage = resolution.configuredPath
+    ? ` Configured md2pdf.chromePath was not found: ${resolution.configuredPath}.`
+    : '';
+
+  const checkedLocationsMessage = checkedLocations
+    ? ` Checked: ${checkedLocations}.`
+    : '';
+
+  return [
+    'No supported browser was found.',
+    'Install Google Chrome, Microsoft Edge, or Brave, or set "md2pdf.chromePath" to the browser executable path.',
+    configuredPathMessage,
+    checkedLocationsMessage,
+  ].join('');
 }
 
 export async function convertMarkdownToPdf(
   mdFilePath: string,
   outputPath?: string
 ): Promise<string> {
-  const chromePath = resolveChromePath();
-  if (!chromePath) {
-    throw new Error(
-      'Chrome/Chromium not found. Install Google Chrome or set "md2pdf.chromePath" in VS Code settings.'
-    );
+  const browserResolution = resolveBrowser();
+  if (!browserResolution.executablePath) {
+    throw new Error(buildMissingBrowserMessage(browserResolution));
   }
+  const browserPath = browserResolution.executablePath;
 
   const mdContent = fs.readFileSync(mdFilePath, 'utf-8');
   const title = path.basename(mdFilePath, path.extname(mdFilePath));
@@ -175,7 +195,7 @@ export async function convertMarkdownToPdf(
   const html = buildHtml(mdContent, title);
 
   const browser = await puppeteer.launch({
-    executablePath: chromePath,
+    executablePath: browserPath,
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
   });
