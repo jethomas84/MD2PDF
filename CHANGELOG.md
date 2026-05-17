@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.3
+
+- Switch the Visual Studio Marketplace publisher from `jethomas84` to `9DStudios`.
+- Keep the package identity `md2pdf-local` and display name `MD2PDF Local` while repointing release instructions to the correct publisher.
+
 ## 0.1.2
 
 - Rename the Marketplace package to `md2pdf-local` so it can be published under `jethomas84`.

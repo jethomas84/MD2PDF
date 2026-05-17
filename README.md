@@ -127,13 +127,13 @@ Use the repo-local `@vscode/vsce` install through the npm scripts from the exten
 
 `vsce` publishes with a Visual Studio Marketplace publisher and a Personal Access Token (PAT). Keep the token outside the repo and either:
 
-- create a PAT in Azure DevOps with the `Marketplace (Manage)` scope and `All accessible organizations`, then sign in once with `npx vsce login jethomas84`, or
+- create a PAT in Azure DevOps with the `Marketplace (Manage)` scope and `All accessible organizations`, then sign in once with `npx vsce login 9DStudios`, or
 - set `VSCE_PAT` for the current shell session before publishing.
 
 Before the first publish:
 
 1. Create or confirm the Azure DevOps organization tied to your Microsoft account.
-2. Create or confirm the `jethomas84` publisher in the Visual Studio Marketplace management portal.
+2. Create or confirm the `9DStudios` publisher in the Visual Studio Marketplace management portal.
 3. Use the same Microsoft account and PAT when you run `vsce login`.
 4. Manage publisher members and extension access through the Marketplace publisher management portal.
 
